@@ -17,55 +17,42 @@ document.getElementById("menuToggle").addEventListener("click",function(){const 
   document.body.appendChild(script);
 
 
-function openNewsletter() {
-  document.getElementById("newsletter-popup").style.display = "flex";
-}
-function closeNewsletter() {
-  document.getElementById("newsletter-popup").style.display = "none";
-}
+document.addEventListener('DOMContentLoaded', function() {
+      var popup = document.getElementById('subscribe-popup');
+      var form = document.getElementById('subscribe-form');
+      var message = document.getElementById('subscribe-message');
+      var LOCALSTORAGE_KEY = 'subscribed';
 
-document.addEventListener("DOMContentLoaded", function() {
-  setTimeout(openNewsletter, 1200); // Show pop-up after 1.2s
+      // Only show popup if has not subscribed
+      if (localStorage.getItem(LOCALSTORAGE_KEY) !== 'true') {
+        popup.style.display = 'block';
+      }
 
-  document.getElementById('newsletterForm').onsubmit = function(e) {
-    e.preventDefault();
-    var name = document.getElementById('name').value.trim();
-    var email = document.getElementById('email').value.trim();
-    var msgBox = document.getElementById('resultMsg');
-    // Basic validation
-    if (!name || !email) {
-      msgBox.textContent = "Both fields are required!";
-      return;
-    }
-    // Google Apps Script endpoint for form submission
-    var scriptURL = 'https://script.google.com/macros/s/AKfycbxdSh50o5oghv4u-5-snLMsr6bxFFigd65pzAKSVO-Q-_jdrUWm5Pw6uqrUZX8l7SIU/exec';
-    fetch(scriptURL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/x-www-form-urlencoded'},
-      body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`
-    }).then(() => {
-      msgBox.style.color = "#128c1f";
-      msgBox.textContent = "Thank you for subscribing!";
-      document.getElementById('newsletterForm').reset();
-      setTimeout(closeNewsletter, 1400);
-    }).catch(() => {
-      msgBox.textContent = "Failed to subscribe. Please try again.";
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var email = document.getElementById('subscribe-email').value;
+        if (!email) return;
+
+        // Send request to Google Apps Script URL
+        fetch('https://script.google.com/macros/s/AKfycbxdSh50o5oghv4u-5-snLMsr6bxFFigd65pzAKSVO-Q-_jdrUWm5Pw6uqrUZX8l7SIU/exec', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: 'email=' + encodeURIComponent(email)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            localStorage.setItem(LOCALSTORAGE_KEY, 'true');
+            popup.style.display = 'none';
+            message.textContent = 'Thank you for subscribing!';
+          } else {
+            message.textContent = 'Failed to subscribe. Try again.';
+          }
+        })
+        .catch(function(error) {
+          message.textContent = 'Error: ' + error;
+        });
+      });
     });
-  };
-});
-// Popup logic
-function showSubscribePopup() {
-  // Show the popup only if not already shown before
-  if (!localStorage.getItem("popupShown")) {
-    // Your popup code here (e.g., display popup HTML/CSS)
-    alert("Subscribe to our newsletter!");
-
-    // If user subscribes (for demo, let's assume clicking 'OK' means subscribed)
-    // Set the flag so it won't show again
-    localStorage.setItem("popupShown", "true");
-  }
-}
-
-// Call on page load or wherever appropriate
-window.onload = showSubscribePopup;
