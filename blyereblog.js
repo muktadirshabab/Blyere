@@ -54,3 +54,18 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   };
 });
+// Popup logic
+function showSubscribePopup() {
+  // Show the popup only if not already shown before
+  if (!localStorage.getItem("popupShown")) {
+    // Your popup code here (e.g., display popup HTML/CSS)
+    alert("Subscribe to our newsletter!");
+
+    // If user subscribes (for demo, let's assume clicking 'OK' means subscribed)
+    // Set the flag so it won't show again
+    localStorage.setItem("popupShown", "true");
+  }
+}
+
+// Call on page load or wherever appropriate
+window.onload = showSubscribePopup;
