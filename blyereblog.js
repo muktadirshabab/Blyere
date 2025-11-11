@@ -17,3 +17,42 @@ document.getElementById("menuToggle").addEventListener("click",function(){const 
   document.body.appendChild(script);
 
 
+const SHEET_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq0oMRhW4W_uLqOUZoFdzMgOqivU9TAWXy75O89Y9Tle1JYBfUxZgzANvo5Q6CJ1rN/exec";
+function setSubscribed() { localStorage.setItem('newsletterSub', '1'); }
+function isSubscribed() { return localStorage.getItem('newsletterSub') === '1'; }
+
+window.addEventListener('DOMContentLoaded', function(){
+  const overlay = document.getElementById('newsletter-popup-overlay');
+  const form = document.getElementById('newsletter-popup');
+  const emailInput = document.getElementById('newsletter-email');
+  const msgDiv = document.getElementById('newsletter-msg');
+  setTimeout(() => {
+    if (!isSubscribed()) overlay.style.display = 'flex';
+  }, 3000);
+
+  function closePopup() {
+    overlay.style.display = 'none';
+    setSubscribed();
+  }
+  form.onsubmit = async function(e){
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    msgDiv.textContent = '';
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+      msgDiv.textContent = "Enter a valid email address.";
+      return;
+    }
+    try {
+      await fetch(SHEET_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, date: (new Date()).toISOString() })
+      });
+      msgDiv.textContent = "Thanks for subscribing!";
+      closePopup();
+    } catch (err) {
+      msgDiv.textContent = "Error. Please try again later.";
+    }
+  }
+});
